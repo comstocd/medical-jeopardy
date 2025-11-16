@@ -15,32 +15,39 @@
             font-family: 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #0c1445 0%, #1a2980 100%);
             color: white;
-            min-height: 100vh;
-            padding: 20px;
+            height: 100vh;
+            padding: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 100%;
             margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
         }
 
         h1 {
-            font-size: 3em;
+            font-size: 2em;
             color: #FFD700;
             text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             letter-spacing: 2px;
         }
 
         .subtitle {
-            font-size: 1.2em;
+            font-size: 0.9em;
             color: #FFA500;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .score-board {
@@ -48,10 +55,11 @@
             justify-content: space-between;
             align-items: center;
             background: rgba(255,255,255,0.1);
-            padding: 15px 30px;
+            padding: 8px 15px;
             border-radius: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             backdrop-filter: blur(10px);
+            flex-shrink: 0;
         }
 
         .team {
@@ -60,44 +68,44 @@
         }
 
         .team-name {
-            font-size: 1.3em;
+            font-size: 0.9em;
             color: #FFD700;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .team input {
             background: rgba(255,255,255,0.2);
             border: 2px solid #FFD700;
             color: white;
-            padding: 8px;
-            font-size: 1em;
+            padding: 4px;
+            font-size: 0.8em;
             border-radius: 5px;
-            width: 200px;
+            width: 120px;
             text-align: center;
         }
 
         .score {
-            font-size: 2em;
+            font-size: 1.3em;
             font-weight: bold;
             color: #00ff00;
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         .score-controls {
             display: flex;
-            gap: 10px;
+            gap: 5px;
             justify-content: center;
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         .score-btn {
             background: rgba(255,255,255,0.2);
             border: 1px solid #FFD700;
             color: white;
-            padding: 5px 15px;
+            padding: 3px 8px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.7em;
         }
 
         .score-btn:hover {
@@ -107,20 +115,20 @@
         .board {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 5px;
+            flex: 1;
+            overflow: hidden;
         }
 
         .category {
             background: #060B5E;
-            padding: 20px;
+            padding: 10px 5px;
             text-align: center;
-            font-size: 1.1em;
+            font-size: 0.85em;
             font-weight: bold;
-            border: 3px solid #FFD700;
+            border: 2px solid #FFD700;
             border-radius: 5px;
             color: #FFD700;
-            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -128,16 +136,15 @@
 
         .clue {
             background: #060B5E;
-            padding: 30px;
+            padding: 15px;
             text-align: center;
-            font-size: 2em;
+            font-size: 1.5em;
             font-weight: bold;
-            border: 3px solid #FFD700;
+            border: 2px solid #FFD700;
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s;
             color: #FFD700;
-            min-height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -145,8 +152,8 @@
 
         .clue:hover:not(.selected) {
             background: #0a0f7a;
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(255,215,0,0.5);
         }
 
         .clue.selected {
@@ -176,43 +183,43 @@
 
         .modal-content {
             background: linear-gradient(135deg, #0c1445 0%, #1a2980 100%);
-            padding: 40px;
+            padding: 30px;
             border-radius: 15px;
             max-width: 900px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            border: 5px solid #FFD700;
+            border: 4px solid #FFD700;
             box-shadow: 0 0 50px rgba(255,215,0,0.3);
         }
 
         .modal-value {
-            font-size: 2.5em;
+            font-size: 2em;
             color: #FFD700;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .modal-category {
-            font-size: 1.5em;
+            font-size: 1.3em;
             color: #FFA500;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-transform: uppercase;
         }
 
         .question {
-            font-size: 1.8em;
-            line-height: 1.6;
-            margin-bottom: 30px;
+            font-size: 1.5em;
+            line-height: 1.5;
+            margin-bottom: 20px;
             text-align: center;
             color: white;
         }
 
         .answer {
-            font-size: 1.5em;
-            line-height: 1.6;
-            padding: 25px;
+            font-size: 1.3em;
+            line-height: 1.5;
+            padding: 20px;
             background: rgba(255,255,255,0.1);
             border-radius: 10px;
             border-left: 5px solid #00ff00;
@@ -226,20 +233,20 @@
         .answer-label {
             color: #00ff00;
             font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 1.2em;
+            margin-bottom: 10px;
+            font-size: 1.1em;
         }
 
         .modal-buttons {
             display: flex;
             gap: 15px;
             justify-content: center;
-            margin-top: 30px;
+            margin-top: 25px;
         }
 
         .btn {
-            padding: 15px 40px;
-            font-size: 1.2em;
+            padding: 12px 35px;
+            font-size: 1.1em;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -268,15 +275,17 @@
         }
 
         .controls {
-            text-align: center;
-            margin-top: 30px;
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 100;
         }
 
         .reset-btn {
             background: #28a745;
             color: white;
-            padding: 15px 40px;
-            font-size: 1.2em;
+            padding: 8px 20px;
+            font-size: 0.9em;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -285,46 +294,8 @@
 
         .reset-btn:hover {
             background: #218838;
-            transform: scale(1.05);
         }
 
-        @media (max-width: 1024px) {
-            h1 {
-                font-size: 2em;
-            }
-            
-            .board {
-                gap: 5px;
-            }
-            
-            .clue {
-                font-size: 1.5em;
-                padding: 20px;
-            }
-            
-            .category {
-                font-size: 0.9em;
-                padding: 15px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .board {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            
-            .modal-content {
-                padding: 20px;
-            }
-            
-            .question {
-                font-size: 1.3em;
-            }
-            
-            .answer {
-                font-size: 1.1em;
-            }
-        }
     </style>
 </head>
 <body>
