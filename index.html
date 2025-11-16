@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Resident Jeopardy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0c1445 0%, #1a2980 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #FFA500;
+            margin-bottom: 20px;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.1);
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .team {
+            flex: 1;
+            text-align: center;
+        }
+
+        .team-name {
+            font-size: 1.3em;
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .team input {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid #FFD700;
+            color: white;
+            padding: 8px;
+            font-size: 1em;
+            border-radius: 5px;
+            width: 200px;
+            text-align: center;
+        }
+
+        .score {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff00;
+            margin-top: 10px;
+        }
+
+        .score-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .score-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid #FFD700;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .score-btn:hover {
+            background: rgba(255,215,0,0.3);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .category {
+            background: #060B5E;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: 3px solid #FFD700;
+            border-radius: 5px;
+            color: #FFD700;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clue {
+            background: #060B5E;
+            padding: 30px;
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            border: 3px solid #FFD700;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #FFD700;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clue:hover:not(.selected) {
+            background: #0a0f7a;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+
+        .clue.selected {
+            background: #060B5E;
+            border-color: #444;
+            cursor: default;
+            opacity: 0.3;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #0c1445 0%, #1a2980 100%);
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 5px solid #FFD700;
+            box-shadow: 0 0 50px rgba(255,215,0,0.3);
+        }
+
+        .modal-value {
+            font-size: 2.5em;
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-category {
+            font-size: 1.5em;
+            color: #FFA500;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .question {
+            font-size: 1.8em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .answer {
+            font-size: 1.5em;
+            line-height: 1.6;
+            padding: 25px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            border-left: 5px solid #00ff00;
+            display: none;
+        }
+
+        .answer.show {
+            display: block;
+        }
+
+        .answer-label {
+            color: #00ff00;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-reveal {
+            background: #FFD700;
+            color: #060B5E;
+        }
+
+        .btn-reveal:hover {
+            background: #FFA500;
+            transform: scale(1.05);
+        }
+
+        .btn-close {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-close:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .reset-btn {
+            background: #28a745;
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .reset-btn:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 1024px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .board {
+                gap: 5px;
+            }
+            
+            .clue {
+                font-size: 1.5em;
+                padding: 20px;
+            }
+            
+            .category {
+                font-size: 0.9em;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .board {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .question {
+                font-size: 1.3em;
+            }
+            
+            .answer {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 MEDICAL JEOPARDY 🏥</h1>
+            <div class="subtitle">Internal Medicine Resident Edition</div>
+        </header>
+
+        <div class="score-board">
+            <div class="team">
+                <div class="team-name">Team 1</div>
+                <input type="text" id="team1-name" placeholder="Enter team name" value="Team 1">
+                <div class="score" id="team1-score">$0</div>
+                <div class="score-controls">
+                    <button class="score-btn" onclick="adjustScore(1, 'current')">+ Current</button>
+                    <button class="score-btn" onclick="adjustScore(1, -200)">-$200</button>
+                </div>
+            </div>
+            <div class="team">
+                <div class="team-name">Team 2</div>
+                <input type="text" id="team2-name" placeholder="Enter team name" value="Team 2">
+                <div class="score" id="team2-score">$0</div>
+                <div class="score-controls">
+                    <button class="score-btn" onclick="adjustScore(2, 'current')">+ Current</button>
+                    <button class="score-btn" onclick="adjustScore(2, -200)">-$200</button>
+                </div>
+            </div>
+            <div class="team">
+                <div class="team-name">Team 3</div>
+                <input type="text" id="team3-name" placeholder="Enter team name" value="Team 3">
+                <div class="score" id="team3-score">$0</div>
+                <div class="score-controls">
+                    <button class="score-btn" onclick="adjustScore(3, 'current')">+ Current</button>
+                    <button class="score-btn" onclick="adjustScore(3, -200)">-$200</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="board" id="board"></div>
+
+        <div class="controls">
+            <button class="reset-btn" onclick="resetGame()">Reset Game</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-category" id="modal-category"></div>
+            <div class="modal-value" id="modal-value"></div>
+            <div class="question" id="modal-question"></div>
+            <div class="answer" id="modal-answer">
+                <div class="answer-label">ANSWER:</div>
+                <div id="answer-text"></div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-reveal" id="reveal-btn" onclick="revealAnswer()">Reveal Answer</button>
+                <button class="btn btn-close" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const categories = [
+            'Cardiology',
+            'Infectious Disease',
+            'Nephrology',
+            'Hematology',
+            'Pulmonology',
+            'Gastroenterology'
+        ];
+
+        const questions = {
+            'Cardiology': {
+                200: {
+                    q: 'This cardiac biomarker is most specific for myocardial injury and is typically the first line test in suspected acute coronary syndrome.',
+                    a: 'What is troponin (Troponin I or Troponin T)?'
+                },
+                400: {
+                    q: 'According to ACC/AHA guidelines, this is the first-line beta-blocker for systolic heart failure with reduced ejection fraction.',
+                    a: 'What is metoprolol succinate (or carvedilol or bisoprolol)?'
+                },
+                600: {
+                    q: 'This ECG finding shows discordant ST elevation in leads with negative QRS complexes and is highly specific for acute MI in the presence of LBBB.',
+                    a: 'What is Sgarbossa criteria (specifically concordant ST elevation ≥1mm or discordant ST elevation ≥5mm)?'
+                },
+                800: {
+                    q: 'Name the five diagnostic criteria for Takotsubo cardiomyopathy according to the Mayo Clinic criteria.',
+                    a: 'What are: 1) Transient hypokinesis/akinesis of LV apex, 2) Absence of obstructive CAD, 3) New ECG abnormalities or troponin elevation, 4) Absence of pheochromocytoma or myocarditis, 5) Emotional or physical stressor (though not required)?'
+                },
+                1000: {
+                    q: 'According to the 2020 ACC/AHA guidelines, at what LVEF threshold should an ICD be considered for primary prevention in patients with non-ischemic cardiomyopathy?',
+                    a: 'What is ≤35% (after 3 months of optimal medical therapy and with expectation of survival >1 year)?'
+                }
+            },
+            'Infectious Disease': {
+                200: {
+                    q: 'This is the most common bacterial cause of community-acquired pneumonia.',
+                    a: 'What is Streptococcus pneumoniae?'
+                },
+                400: {
+                    q: 'According to IDSA guidelines, this is the recommended duration of antibiotic therapy for uncomplicated gram-negative bacteremia from a urinary source.',
+                    a: 'What is 7 days (or 5-7 days for uncomplicated cases)?'
+                },
+                600: {
+                    q: 'This combination of antibiotics provides synergy against Enterococcus faecalis in endocarditis and should be used for 4-6 weeks.',
+                    a: 'What is ampicillin (or penicillin G) plus gentamicin?'
+                },
+                800: {
+                    q: 'Name three major criteria for infective endocarditis according to the Modified Duke Criteria.',
+                    a: 'What are: 1) Positive blood cultures with typical organisms (2 separate cultures), 2) Evidence of endocardial involvement (positive echo or new valvular regurgitation), 3) Positive serology for Coxiella burnetii?'
+                },
+                1000: {
+                    q: 'This is the first-line antibiotic for empiric treatment of hospital-acquired pneumonia with risk factors for Pseudomonas and MRSA according to IDSA guidelines.',
+                    a: 'What is vancomycin plus an anti-pseudomonal beta-lactam (piperacillin-tazobactam, cefepime, ceftazidime, or meropenem)?'
+                }
+            },
+            'Nephrology': {
+                200: {
+                    q: 'This is the most common cause of acute kidney injury in hospitalized patients.',
+                    a: 'What is acute tubular necrosis (ATN) or prerenal azotemia?'
+                },
+                400: {
+                    q: 'According to KDIGO guidelines, this is the GFR threshold that defines Stage 3a chronic kidney disease.',
+                    a: 'What is 45-59 mL/min/1.73m²?'
+                },
+                600: {
+                    q: 'This urinary finding of muddy brown casts, renal tubular epithelial cells, and FENa >2% is most consistent with this diagnosis.',
+                    a: 'What is acute tubular necrosis (ATN)?'
+                },
+                800: {
+                    q: 'Name the four indications for urgent dialysis that can be remembered by the mnemonic AEIOU.',
+                    a: 'What are: Acidosis (severe metabolic), Electrolytes (hyperkalemia), Ingestion (toxic alcohols, lithium), Overload (volume), Uremia (symptoms like pericarditis or encephalopathy)?'
+                },
+                1000: {
+                    q: 'This autoantibody is highly specific for anti-glomerular basement membrane disease and is found in both Goodpasture syndrome and isolated renal disease.',
+                    a: 'What is anti-GBM antibody (antibody against the alpha-3 chain of type IV collagen)?'
+                }
+            },
+            'Hematology': {
+                200: {
+                    q: 'This lab finding of elevated INR with normal PTT suggests deficiency of this clotting factor or vitamin.',
+                    a: 'What is Factor VII or Vitamin K deficiency?'
+                },
+                400: {
+                    q: 'According to the Wells criteria, this DVT probability score of ≥2 indicates that imaging should be obtained.',
+                    a: 'What is DVT likely (Wells score ≥2 indicates D-dimer or ultrasound should be obtained)?'
+                },
+                600: {
+                    q: 'This is the diagnostic finding on bone marrow biopsy that confirms the diagnosis of multiple myeloma along with >10% plasma cells.',
+                    a: 'What are clonal plasma cells (or evidence of end organ damage: hypercalcemia, renal insufficiency, anemia, or bone lesions - CRAB criteria)?'
+                },
+                800: {
+                    q: 'Name the four major criteria for polycythemia vera according to the 2016 WHO classification.',
+                    a: 'What are: 1) Elevated hemoglobin or hematocrit, 2) Bone marrow biopsy showing hypercellularity, 3) Presence of JAK2 mutation, 4) Subnormal serum erythropoietin level?'
+                },
+                1000: {
+                    q: 'This is the HAS-BLED score threshold at which patients on anticoagulation are considered high risk for bleeding and require closer monitoring.',
+                    a: 'What is ≥3 (though this should not preclude anticoagulation if indicated)?'
+                }
+            },
+            'Pulmonology': {
+                200: {
+                    q: 'This is the most common cause of COPD exacerbation.',
+                    a: 'What is viral respiratory infection (or bacterial infection - acceptable answers include both)?'
+                },
+                400: {
+                    q: 'According to GOLD guidelines, this medication class should be added to long-acting bronchodilators if a COPD patient has ≥2 exacerbations or 1 hospitalization per year.',
+                    a: 'What is inhaled corticosteroids (ICS)?'
+                },
+                600: {
+                    q: 'This is the Light criteria that distinguishes exudative from transudative pleural effusions, requiring at least one of three conditions.',
+                    a: 'What is: pleural protein/serum protein >0.5, pleural LDH/serum LDH >0.6, or pleural LDH >2/3 upper limit of normal for serum?'
+                },
+                800: {
+                    q: 'According to the CURB-65 score, name all five criteria used to assess pneumonia severity and predict mortality.',
+                    a: 'What are: Confusion, Urea >20 mg/dL (BUN >19), Respiratory rate ≥30, Blood pressure (SBP <90 or DBP ≤60), Age ≥65?'
+                },
+                1000: {
+                    q: 'This is the diagnostic threshold for obstructive sleep apnea severity, defined as Apnea-Hypopnea Index (AHI) events per hour.',
+                    a: 'What is: Mild 5-15, Moderate 15-30, Severe >30 events per hour?'
+                }
+            },
+            'Gastroenterology': {
+                200: {
+                    q: 'This is the first-line medication for gastroesophageal reflux disease according to ACG guidelines.',
+                    a: 'What is a proton pump inhibitor (PPI)?'
+                },
+                400: {
+                    q: 'According to ACG guidelines, this is the first-line antibiotic regimen for H. pylori eradication in areas with low clarithromycin resistance.',
+                    a: 'What is clarithromycin triple therapy (PPI + clarithromycin + amoxicillin or metronidazole for 14 days)?'
+                },
+                600: {
+                    q: 'This scoring system uses five variables to predict severity and mortality in acute pancreatitis within 48 hours of admission.',
+                    a: 'What is Ranson criteria (or APACHE II, or Revised Atlanta Classification - all acceptable)?'
+                },
+                800: {
+                    q: 'According to AASLD guidelines, at what MELD score should patients with cirrhosis be referred for liver transplant evaluation?',
+                    a: 'What is MELD score ≥15 (or when they have complications of portal hypertension)?'
+                },
+                1000: {
+                    q: 'Name the West Haven criteria grades for hepatic encephalopathy from grade 1 through grade 4.',
+                    a: 'What are: Grade 1 (trivial lack of awareness, mild confusion), Grade 2 (lethargy, disorientation), Grade 3 (somnolent but arousable, marked confusion), Grade 4 (coma)?'
+                }
+            }
+        };
+
+        let selectedClues = new Set();
+        let scores = {1: 0, 2: 0, 3: 0};
+        let currentValue = 0;
+
+        function initBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+
+            // Add category headers
+            categories.forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                categoryDiv.textContent = category;
+                board.appendChild(categoryDiv);
+            });
+
+            // Add clues
+            const values = [200, 400, 600, 800, 1000];
+            values.forEach(value => {
+                categories.forEach(category => {
+                    const clueDiv = document.createElement('div');
+                    clueDiv.className = 'clue';
+                    clueDiv.textContent = `$${value}`;
+                    clueDiv.onclick = () => showClue(category, value);
+                    clueDiv.dataset.category = category;
+                    clueDiv.dataset.value = value;
+                    board.appendChild(clueDiv);
+                });
+            });
+        }
+
+        function showClue(category, value) {
+            const clueElement = document.querySelector(`[data-category="${category}"][data-value="${value}"]`);
+            if (clueElement.classList.contains('selected')) return;
+
+            currentValue = value;
+            const question = questions[category][value];
+
+            document.getElementById('modal-category').textContent = category;
+            document.getElementById('modal-value').textContent = `$${value}`;
+            document.getElementById('modal-question').textContent = question.q;
+            document.getElementById('answer-text').textContent = question.a;
+            document.getElementById('modal-answer').classList.remove('show');
+            document.getElementById('reveal-btn').style.display = 'inline-block';
+
+            document.getElementById('modal').classList.add('active');
+
+            clueElement.classList.add('selected');
+            selectedClues.add(`${category}-${value}`);
+        }
+
+        function revealAnswer() {
+            document.getElementById('modal-answer').classList.add('show');
+            document.getElementById('reveal-btn').style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function adjustScore(team, amount) {
+            if (amount === 'current') {
+                amount = currentValue;
+            }
+            scores[team] += amount;
+            document.getElementById(`team${team}-score`).textContent = `$${scores[team]}`;
+        }
+
+        function resetGame() {
+            if (confirm('Are you sure you want to reset the game? All progress will be lost.')) {
+                selectedClues.clear();
+                scores = {1: 0, 2: 0, 3: 0};
+                document.getElementById('team1-score').textContent = '$0';
+                document.getElementById('team2-score').textContent = '$0';
+                document.getElementById('team3-score').textContent = '$0';
+                initBoard();
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modal').onclick = function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        };
+
+        // Initialize the board on load
+        initBoard();
+    </script>
+</body>
+</html>
