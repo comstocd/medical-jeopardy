@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Jeopardy - 3 Phase Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0c1445 0%, #1a2980 100%);
+            color: white;
+            height: 100vh;
+            padding: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .phase-indicator {
+            font-size: 1.2em;
+            color: #FFA500;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .control-btn {
+            background: #17a2b8;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .control-btn:hover {
+            background: #138496;
+        }
+
+        .control-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+        }
+
+        .team {
+            flex: 1;
+            text-align: center;
+        }
+
+        .team-name {
+            font-size: 0.9em;
+            color: #FFD700;
+            margin-bottom: 5px;
+        }
+
+        .team input {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid #FFD700;
+            color: white;
+            padding: 4px;
+            font-size: 0.8em;
+            border-radius: 5px;
+            width: 120px;
+            text-align: center;
+        }
+
+        .score {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #00ff00;
+            margin-top: 5px;
+        }
+
+        .score-controls {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin-top: 5px;
+        }
+
+        .score-btn {
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            font-size: 0.7em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .score-btn:hover {
+            background: #218838;
+        }
+
+        .board {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            overflow-y: auto;
+            padding-bottom: 10px;
+        }
+
+        .category {
+            background: #060B5E;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.8em;
+            border-radius: 5px;
+            color: #FFD700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+            border: 2px solid #FFD700;
+        }
+
+        .cell {
+            background: linear-gradient(135deg, #060B5E 0%, #0a1270 100%);
+            padding: 15px;
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #FFD700;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #FFD700;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cell:hover {
+            background: linear-gradient(135deg, #0a1270 0%, #0e1590 100%);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .cell.answered {
+            background: #1a1a1a;
+            color: #333;
+            cursor: default;
+            border-color: #333;
+        }
+
+        .cell.answered:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #060B5E 0%, #0a1270 100%);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            border: 3px solid #FFD700;
+            position: relative;
+        }
+
+        .modal-category {
+            color: #FFD700;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .modal-value {
+            color: #FFA500;
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .question {
+            font-size: 1.8em;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            line-height: 1.5;
+        }
+
+        .answer {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .answer.show {
+            display: block;
+        }
+
+        .answer-label {
+            color: #00ff00;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .answer-text {
+            font-size: 1.5em;
+            padding: 20px;
+            background: rgba(0,255,0,0.1);
+            border-radius: 10px;
+            border-left: 5px solid #00ff00;
+        }
+
+        .followup {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            font-size: 1.1em;
+            line-height: 1.6;
+            border-left: 5px solid #FFA500;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-reveal {
+            background: #FFD700;
+            color: #060B5E;
+        }
+
+        .btn-reveal:hover {
+            background: #FFA500;
+            transform: scale(1.05);
+        }
+
+        .btn-close {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-close:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        /* Gameboard Selector */
+        .board-selector {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .board-selector.active {
+            display: block;
+        }
+
+        .board-selector h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .board-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .board-option {
+            background: #060B5E;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #FFD700;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .board-option:hover {
+            background: #0a1270;
+            transform: scale(1.05);
+        }
+
+        .board-option.selected {
+            background: #FFD700;
+            color: #060B5E;
+        }
+
+        /* Final Jeopardy Styles */
+        .final-jeopardy {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        .final-jeopardy.active {
+            display: flex;
+        }
+
+        .final-category {
+            font-size: 2.5em;
+            color: #FFD700;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .wager-section {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .wager-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .team-wager {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+        }
+
+        .team-wager label {
+            font-size: 1.2em;
+            color: #FFD700;
+            flex: 1;
+        }
+
+        .team-wager input {
+            width: 150px;
+            padding: 10px;
+            font-size: 1.2em;
+            border: 2px solid #FFD700;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-align: center;
+        }
+
+        .final-question-display {
+            font-size: 2em;
+            padding: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            margin: 20px 0;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+
+        .reset-btn {
+            background: #28a745;
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .reset-btn:hover {
+            background: #218838;
+        }
+
+        .settings-btn {
+            background: #6c757d;
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .settings-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 MEDICAL JEOPARDY 🏥</h1>
+            <div class="phase-indicator" id="phase-indicator">SELECT GAMEBOARDS</div>
+        </header>
+
+        <div class="game-controls">
+            <button class="control-btn" id="select-boards-btn" onclick="showBoardSelector()">Select Gameboards</button>
+            <button class="control-btn" id="start-jeopardy-btn" onclick="startJeopardy()" disabled>Start Jeopardy</button>
+            <button class="control-btn" id="start-double-btn" onclick="startDoubleJeopardy()" disabled>Start Double Jeopardy</button>
+            <button class="control-btn" id="start-final-btn" onclick="startFinalJeopardy()" disabled>Start Final Jeopardy</button>
+        </div>
+
+        <!-- Board Selector -->
+        <div class="board-selector active" id="board-selector">
+            <h3>Select Jeopardy Round Gameboard:</h3>
+            <div class="board-options" id="jeopardy-boards"></div>
+            
+            <h3 style="margin-top: 20px;">Select Double Jeopardy Round Gameboard:</h3>
+            <div class="board-options" id="double-jeopardy-boards"></div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="control-btn" onclick="confirmBoardSelection()">Confirm Selection</button>
+            </div>
+        </div>
+
+        <div class="score-board">
+            <div class="team">
+                <div class="team-name">Team 1</div>
+                <input type="text" id="team1-name" placeholder="Enter team name" value="Team 1">
+                <div class="score" id="team1-score">$0</div>
+                <div class="score-controls">
+                    <button class="score-btn" onclick="adjustScore(1, 'current')">+ Current</button>
+                    <button class="score-btn" onclick="adjustScore(1, -200)">-$200</button>
+                </div>
+            </div>
+            <div class="team">
+                <div class="team-name">Team 2</div>
+                <input type="text" id="team2-name" placeholder="Enter team name" value="Team 2">
+                <div class="score" id="team2-score">$0</div>
+                <div class="score-controls">
+                    <button class="score-btn" onclick="adjustScore(2, 'current')">+ Current</button>
+                    <button class="score-btn" onclick="adjustScore(2, -200)">-$200</button>
+                </div>
+            </div>
+            <div class="team">
+                <div class="team-name">Team 3</div>
+                <input type="text" id="team3-name" placeholder="Enter team name" value="Team 3">
+                <div class="score" id="team3-score">$0</div>
+                <div class="score-controls">
+                    <button class="score-btn" onclick="adjustScore(3, 'current')">+ Current</button>
+                    <button class="score-btn" onclick="adjustScore(3, -200)">-$200</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="board" id="board"></div>
+
+        <!-- Final Jeopardy Section -->
+        <div class="final-jeopardy" id="final-jeopardy">
+            <div class="final-category" id="final-category">FINAL JEOPARDY</div>
+            
+            <div class="wager-section" id="wager-section">
+                <h3 style="text-align: center; margin-bottom: 20px; color: #FFD700;">Place Your Wagers</h3>
+                <div class="wager-inputs">
+                    <div class="team-wager">
+                        <label id="wager-team1-label">Team 1:</label>
+                        <input type="number" id="wager1" min="0" value="0">
+                    </div>
+                    <div class="team-wager">
+                        <label id="wager-team2-label">Team 2:</label>
+                        <input type="number" id="wager2" min="0" value="0">
+                    </div>
+                    <div class="team-wager">
+                        <label id="wager-team3-label">Team 3:</label>
+                        <input type="number" id="wager3" min="0" value="0">
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-reveal" onclick="showFinalQuestion()">Show Question</button>
+                </div>
+            </div>
+
+            <div class="final-question-display" id="final-question-display"></div>
+
+            <div class="modal-buttons" id="final-buttons" style="display: none;">
+                <button class="btn btn-reveal" onclick="revealFinalAnswer()">Reveal Answer</button>
+                <button class="btn btn-close" onclick="endGame()">End Game</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="settings-btn" onclick="showBoardSelector()">⚙️ Settings</button>
+            <button class="reset-btn" onclick="resetGame()">Reset Game</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-category" id="modal-category"></div>
+            <div class="modal-value" id="modal-value"></div>
+            <div class="question" id="modal-question"></div>
+            <div class="answer" id="modal-answer">
+                <div class="answer-label">ANSWER:</div>
+                <div class="answer-text" id="answer-text"></div>
+            </div>
+            <div class="followup" id="modal-followup"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-reveal" id="reveal-btn" onclick="revealAnswer()">Reveal Answer</button>
+                <button class="btn btn-close" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="gameboards-data.js"></script>
+    <script>
+        // Game State
+        let currentPhase = 'setup'; // setup, jeopardy, double-jeopardy, final-jeopardy
+        let selectedJeopardyBoard = null;
+        let selectedDoubleBoard = null;
+        let currentQuestions = {};
+        let answeredQuestions = new Set();
+        let currentQuestionValue = 0;
+        let teamScores = {1: 0, 2: 0, 3: 0};
+        
+        // Initialize game
+        function initGame() {
+            populateBoardSelectors();
+            updatePhaseDisplay();
+        }
+
+        function populateBoardSelectors() {
+            const jeopardyContainer = document.getElementById('jeopardy-boards');
+            const doubleContainer = document.getElementById('double-jeopardy-boards');
+            
+            // Populate Jeopardy boards
+            Object.keys(GAMEBOARDS).forEach(boardName => {
+                if (boardName.includes('Regular') || boardName.includes('PGY')) {
+                    const option = createBoardOption(boardName, 'jeopardy');
+                    jeopardyContainer.appendChild(option);
+                }
+            });
+            
+            // Populate Double Jeopardy boards
+            Object.keys(GAMEBOARDS).forEach(boardName => {
+                if (boardName.includes('Double')) {
+                    const option = createBoardOption(boardName, 'double');
+                    doubleContainer.appendChild(option);
+                }
+            });
+        }
+
+        function createBoardOption(boardName, type) {
+            const div = document.createElement('div');
+            div.className = 'board-option';
+            div.textContent = boardName;
+            div.onclick = () => selectBoard(boardName, type, div);
+            return div;
+        }
+
+        function selectBoard(boardName, type, element) {
+            // Clear previous selections for this type
+            const container = type === 'jeopardy' ? 
+                document.getElementById('jeopardy-boards') : 
+                document.getElementById('double-jeopardy-boards');
+            
+            container.querySelectorAll('.board-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            
+            if (type === 'jeopardy') {
+                selectedJeopardyBoard = boardName;
+            } else {
+                selectedDoubleBoard = boardName;
+            }
+            
+            // Enable start button if both boards selected
+            if (selectedJeopardyBoard && selectedDoubleBoard) {
+                document.getElementById('start-jeopardy-btn').disabled = false;
+            }
+        }
+
+        function confirmBoardSelection() {
+            if (!selectedJeopardyBoard || !selectedDoubleBoard) {
+                alert('Please select both a Jeopardy and Double Jeopardy board');
+                return;
+            }
+            hideBoardSelector();
+        }
+
+        function showBoardSelector() {
+            document.getElementById('board-selector').classList.add('active');
+            document.getElementById('board').style.display = 'none';
+            document.getElementById('final-jeopardy').classList.remove('active');
+        }
+
+        function hideBoardSelector() {
+            document.getElementById('board-selector').classList.remove('active');
+        }
+
+        function startJeopardy() {
+            currentPhase = 'jeopardy';
+            loadBoard(selectedJeopardyBoard, [200, 400, 600, 800, 1000]);
+            document.getElementById('start-double-btn').disabled = false;
+            document.getElementById('start-final-btn').disabled = false;
+            updatePhaseDisplay();
+            hideBoardSelector();
+            document.getElementById('board').style.display = 'grid';
+        }
+
+        function startDoubleJeopardy() {
+            currentPhase = 'double-jeopardy';
+            loadBoard(selectedDoubleBoard, [400, 800, 1200, 1600, 2000]);
+            updatePhaseDisplay();
+            document.getElementById('board').style.display = 'grid';
+            document.getElementById('final-jeopardy').classList.remove('active');
+        }
+
+        function startFinalJeopardy() {
+            currentPhase = 'final-jeopardy';
+            updatePhaseDisplay();
+            document.getElementById('board').style.display = 'none';
+            document.getElementById('final-jeopardy').classList.add('active');
+            
+            // Update wager labels with team names
+            for (let i = 1; i <= 3; i++) {
+                const teamName = document.getElementById(`team${i}-name`).value;
+                const score = teamScores[i];
+                document.getElementById(`wager-team${i}-label`).textContent = 
+                    `${teamName} ($${score}):`;
+                document.getElementById(`wager${i}`).max = Math.max(score, 1000);
+            }
+        }
+
+        function loadBoard(boardName, pointValues) {
+            answeredQuestions.clear();
+            currentQuestions = GAMEBOARDS[boardName];
+            const categories = Object.keys(currentQuestions);
+            const boardElement = document.getElementById('board');
+            boardElement.innerHTML = '';
+            
+            // Create headers
+            categories.forEach(category => {
+                const categoryCell = document.createElement('div');
+                categoryCell.className = 'category';
+                categoryCell.textContent = category;
+                boardElement.appendChild(categoryCell);
+            });
+            
+            // Create question cells
+            pointValues.forEach(value => {
+                categories.forEach(category => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = `$${value}`;
+                    cell.dataset.category = category;
+                    cell.dataset.value = value;
+                    cell.onclick = () => showQuestion(category, value, cell);
+                    boardElement.appendChild(cell);
+                });
+            });
+        }
+
+        function showQuestion(category, value, cell) {
+            if (cell.classList.contains('answered')) return;
+            
+            const question = currentQuestions[category][value];
+            currentQuestionValue = value;
+            
+            document.getElementById('modal-category').textContent = category;
+            document.getElementById('modal-value').textContent = `$${value}`;
+            document.getElementById('modal-question').textContent = question.q;
+            document.getElementById('answer-text').textContent = question.a;
+            document.getElementById('modal-followup').textContent = question.followup || '';
+            document.getElementById('modal-answer').classList.remove('show');
+            document.getElementById('reveal-btn').style.display = 'inline-block';
+            
+            document.getElementById('modal').classList.add('active');
+            
+            cell.classList.add('answered');
+            answeredQuestions.add(`${category}-${value}`);
+        }
+
+        function revealAnswer() {
+            document.getElementById('modal-answer').classList.add('show');
+            document.getElementById('reveal-btn').style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function adjustScore(team, amount) {
+            if (amount === 'current') {
+                amount = currentQuestionValue;
+            }
+            teamScores[team] += amount;
+            updateScoreDisplay();
+        }
+
+        function updateScoreDisplay() {
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`team${i}-score`).textContent = 
+                    `$${teamScores[i]}`;
+            }
+        }
+
+        function updatePhaseDisplay() {
+            const indicator = document.getElementById('phase-indicator');
+            const phases = {
+                'setup': 'SELECT GAMEBOARDS',
+                'jeopardy': 'JEOPARDY ROUND',
+                'double-jeopardy': 'DOUBLE JEOPARDY',
+                'final-jeopardy': 'FINAL JEOPARDY'
+            };
+            indicator.textContent = phases[currentPhase];
+        }
+
+        // Final Jeopardy Functions
+        function showFinalQuestion() {
+            const category = "INTERNAL MEDICINE";
+            const question = "This cardiac biomarker elevation, when combined with ECG changes and clinical presentation, forms the basis for diagnosing acute myocardial infarction according to the Fourth Universal Definition.";
+            
+            document.getElementById('final-question-display').textContent = question;
+            document.getElementById('wager-section').style.display = 'none';
+            document.getElementById('final-buttons').style.display = 'flex';
+        }
+
+        function revealFinalAnswer() {
+            const answer = "What is troponin (cardiac troponin I or T)?";
+            const display = document.getElementById('final-question-display');
+            display.innerHTML = `
+                <div>
+                    <div style="font-size: 1.5em; margin-bottom: 30px;">${display.textContent}</div>
+                    <div style="color: #00ff00; font-size: 2em; border-top: 3px solid #00ff00; padding-top: 20px;">
+                        ${answer}
+                    </div>
+                </div>
+            `;
+            
+            // Apply wagers
+            for (let i = 1; i <= 3; i++) {
+                const wager = parseInt(document.getElementById(`wager${i}`).value) || 0;
+                const correct = confirm(`Did ${document.getElementById(`team${i}-name`).value} answer correctly?`);
+                if (correct) {
+                    teamScores[i] += wager;
+                } else {
+                    teamScores[i] -= wager;
+                }
+            }
+            updateScoreDisplay();
+        }
+
+        function endGame() {
+            const scores = [
+                {team: document.getElementById('team1-name').value, score: teamScores[1]},
+                {team: document.getElementById('team2-name').value, score: teamScores[2]},
+                {team: document.getElementById('team3-name').value, score: teamScores[3]}
+            ];
+            scores.sort((a, b) => b.score - a.score);
+            
+            alert(`FINAL SCORES:\n\n1st: ${scores[0].team} - $${scores[0].score}\n2nd: ${scores[1].team} - $${scores[1].score}\n3rd: ${scores[2].team} - $${scores[2].score}`);
+        }
+
+        function resetGame() {
+            if (confirm('Reset the entire game? This will clear all scores and progress.')) {
+                currentPhase = 'setup';
+                selectedJeopardyBoard = null;
+                selectedDoubleBoard = null;
+                teamScores = {1: 0, 2: 0, 3: 0};
+                answeredQuestions.clear();
+                updateScoreDisplay();
+                updatePhaseDisplay();
+                document.getElementById('start-jeopardy-btn').disabled = true;
+                document.getElementById('start-double-btn').disabled = true;
+                document.getElementById('start-final-btn').disabled = true;
+                showBoardSelector();
+                
+                // Reset board selections
+                document.querySelectorAll('.board-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+            }
+        }
+
+        // Initialize on load
+        initGame();
+    </script>
+</body>
+</html>
