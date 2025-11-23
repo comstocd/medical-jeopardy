@@ -2,7 +2,6 @@
 // Auto-generated from all gameboard files
 
 const GAMEBOARDS = {
-{
   "PGY-1 Gameboard": {
     "Basic Cardiology": {
       "200": {
@@ -1456,5 +1455,4 @@ const GAMEBOARDS = {
       }
     }
   }
-}
 };
