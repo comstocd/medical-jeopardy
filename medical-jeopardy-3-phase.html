@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Medical Jeopardy - 3 Phase Edition</title>
     <style>
         * {
@@ -15,11 +17,13 @@
             font-family: 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #0c1445 0%, #1a2980 100%);
             color: white;
-            height: 100vh;
+            min-height: 100vh;
             padding: 10px;
-            overflow: hidden;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
         }
 
         .container {
@@ -37,15 +41,15 @@
         }
 
         h1 {
-            font-size: 2em;
+            font-size: 2.2em;
             color: #FFD700;
             text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
-            margin-bottom: 5px;
+            margin-bottom: 10px;
             letter-spacing: 2px;
         }
 
         .phase-indicator {
-            font-size: 1.2em;
+            font-size: 1.3em;
             color: #FFA500;
             margin-bottom: 10px;
             font-weight: bold;
@@ -56,18 +60,22 @@
             display: flex;
             gap: 10px;
             justify-content: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
         }
 
         .control-btn {
             background: #17a2b8;
             color: white;
-            padding: 8px 16px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 1em;
             font-weight: bold;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 44px;
         }
 
         .control-btn:hover {
@@ -84,9 +92,9 @@
             justify-content: space-between;
             align-items: center;
             background: rgba(255,255,255,0.1);
-            padding: 8px 15px;
+            padding: 10px 15px;
             border-radius: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             backdrop-filter: blur(10px);
             flex-shrink: 0;
         }
@@ -97,7 +105,7 @@
         }
 
         .team-name {
-            font-size: 0.9em;
+            font-size: 1em;
             color: #FFD700;
             margin-bottom: 5px;
         }
@@ -106,15 +114,15 @@
             background: rgba(255,255,255,0.2);
             border: 2px solid #FFD700;
             color: white;
-            padding: 4px;
-            font-size: 0.8em;
+            padding: 8px;
+            font-size: 1em;
             border-radius: 5px;
-            width: 120px;
+            width: 140px;
             text-align: center;
         }
 
         .score {
-            font-size: 1.3em;
+            font-size: 1.5em;
             font-weight: bold;
             color: #00ff00;
             margin-top: 5px;
@@ -122,19 +130,23 @@
 
         .score-controls {
             display: flex;
-            gap: 5px;
+            gap: 8px;
             justify-content: center;
-            margin-top: 5px;
+            margin-top: 8px;
         }
 
         .score-btn {
             background: #28a745;
             color: white;
-            padding: 4px 8px;
-            font-size: 0.7em;
+            padding: 8px 12px;
+            font-size: 0.9em;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 44px;
+            min-width: 44px;
         }
 
         .score-btn:hover {
@@ -145,17 +157,18 @@
             flex: 1;
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 5px;
+            gap: 8px;
             overflow-y: auto;
             padding-bottom: 10px;
+            max-height: calc(100vh - 300px);
         }
 
         .category {
             background: #060B5E;
-            padding: 8px;
+            padding: 10px;
             text-align: center;
             font-weight: bold;
-            font-size: 0.8em;
+            font-size: 0.85em;
             border-radius: 5px;
             color: #FFD700;
             display: flex;
@@ -163,23 +176,26 @@
             justify-content: center;
             min-height: 60px;
             border: 2px solid #FFD700;
+            line-height: 1.2;
         }
 
         .cell {
             background: linear-gradient(135deg, #060B5E 0%, #0a1270 100%);
             padding: 15px;
             text-align: center;
-            font-size: 1.8em;
+            font-size: 2em;
             font-weight: bold;
             color: #FFD700;
             border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
             border: 2px solid #FFD700;
-            min-height: 60px;
+            min-height: 70px;
             display: flex;
             align-items: center;
             justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         .cell:hover {
