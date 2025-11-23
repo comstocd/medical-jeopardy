@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Resident Jeopardy</title>
+    <title>Medical Jeopardy - 3 Phase Edition</title>
     <style>
         * {
             margin: 0;
@@ -44,10 +44,39 @@
             letter-spacing: 2px;
         }
 
-        .subtitle {
-            font-size: 0.9em;
+        .phase-indicator {
+            font-size: 1.2em;
             color: #FFA500;
             margin-bottom: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .control-btn {
+            background: #17a2b8;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .control-btn:hover {
+            background: #138496;
+        }
+
+        .control-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
         }
 
         .score-board {
@@ -99,68 +128,76 @@
         }
 
         .score-btn {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid #FFD700;
+            background: #28a745;
             color: white;
-            padding: 3px 8px;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 4px 8px;
             font-size: 0.7em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
         .score-btn:hover {
-            background: rgba(255,215,0,0.3);
+            background: #218838;
         }
 
         .board {
+            flex: 1;
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             gap: 5px;
-            flex: 1;
-            overflow: hidden;
+            overflow-y: auto;
+            padding-bottom: 10px;
         }
 
         .category {
             background: #060B5E;
-            padding: 10px 5px;
+            padding: 8px;
             text-align: center;
-            font-size: 0.85em;
             font-weight: bold;
-            border: 2px solid #FFD700;
+            font-size: 0.8em;
             border-radius: 5px;
             color: #FFD700;
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: 60px;
+            border: 2px solid #FFD700;
         }
 
-        .clue {
-            background: #060B5E;
+        .cell {
+            background: linear-gradient(135deg, #060B5E 0%, #0a1270 100%);
             padding: 15px;
             text-align: center;
-            font-size: 1.5em;
+            font-size: 1.8em;
             font-weight: bold;
-            border: 2px solid #FFD700;
+            color: #FFD700;
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s;
-            color: #FFD700;
+            border: 2px solid #FFD700;
+            min-height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .clue:hover:not(.selected) {
-            background: #0a0f7a;
-            transform: scale(1.02);
-            box-shadow: 0 0 15px rgba(255,215,0,0.5);
+        .cell:hover {
+            background: linear-gradient(135deg, #0a1270 0%, #0e1590 100%);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
         }
 
-        .clue.selected {
-            background: #060B5E;
-            border-color: #444;
+        .cell.answered {
+            background: #1a1a1a;
+            color: #333;
             cursor: default;
-            opacity: 0.3;
+            border-color: #333;
+        }
+
+        .cell.answered:hover {
+            transform: none;
+            box-shadow: none;
         }
 
         .modal {
@@ -172,9 +209,8 @@
             height: 100%;
             background: rgba(0,0,0,0.9);
             z-index: 1000;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
+            justify-content: center;
         }
 
         .modal.active {
@@ -182,117 +218,44 @@
         }
 
         .modal-content {
-            background: linear-gradient(135deg, #0c1445 0%, #1a2980 100%);
+            background: linear-gradient(135deg, #060B5E 0%, #0a1270 100%);
             padding: 30px;
             border-radius: 15px;
-            max-width: 900px;
-            width: 100%;
-            max-height: 90vh;
+            max-width: 90%;
+            max-height: 90%;
             overflow-y: auto;
-            border: 4px solid #FFD700;
-            box-shadow: 0 0 50px rgba(255,215,0,0.3);
-        }
-
-        .modal-content.daily-double {
-            border-color: #ff0000;
-            box-shadow: 0 0 50px rgba(255,0,0,0.5);
-        }
-
-        .daily-double-banner {
-            font-size: 3em;
-            color: #ff0000;
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 20px;
-            animation: pulse 1s infinite;
-            text-shadow: 0 0 20px rgba(255,0,0,0.8);
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.05); }
-        }
-
-        .wager-section {
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .wager-input {
-            background: rgba(255,255,255,0.2);
-            border: 2px solid #FFD700;
-            color: white;
-            padding: 10px;
-            font-size: 1.3em;
-            border-radius: 5px;
-            width: 200px;
-            text-align: center;
-            margin: 10px 0;
-        }
-
-        .wager-btn {
-            background: #FFD700;
-            color: #060B5E;
-            padding: 10px 30px;
-            font-size: 1.1em;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            margin: 5px;
-        }
-
-        .wager-btn:hover {
-            background: #FFA500;
-        }
-
-        .follow-up {
-            font-size: 1.1em;
-            line-height: 1.5;
-            padding: 15px;
-            background: rgba(255,165,0,0.1);
-            border-radius: 10px;
-            border-left: 5px solid #FFA500;
-            margin-top: 15px;
-        }
-
-        .follow-up-label {
-            color: #FFA500;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .modal-value {
-            font-size: 2em;
-            color: #FFD700;
-            text-align: center;
-            margin-bottom: 20px;
+            border: 3px solid #FFD700;
+            position: relative;
         }
 
         .modal-category {
-            font-size: 1.3em;
-            color: #FFA500;
+            color: #FFD700;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
             text-align: center;
-            margin-bottom: 15px;
-            text-transform: uppercase;
+        }
+
+        .modal-value {
+            color: #FFA500;
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
         .question {
-            font-size: 1.5em;
-            line-height: 1.5;
-            margin-bottom: 20px;
-            text-align: center;
-            color: white;
-        }
-
-        .answer {
-            font-size: 1.3em;
-            line-height: 1.5;
+            font-size: 1.8em;
+            margin: 30px 0;
             padding: 20px;
             background: rgba(255,255,255,0.1);
             border-radius: 10px;
-            border-left: 5px solid #00ff00;
+            line-height: 1.5;
+        }
+
+        .answer {
             display: none;
+            margin-top: 20px;
         }
 
         .answer.show {
@@ -301,20 +264,38 @@
 
         .answer-label {
             color: #00ff00;
+            font-size: 1.2em;
             font-weight: bold;
             margin-bottom: 10px;
+        }
+
+        .answer-text {
+            font-size: 1.5em;
+            padding: 20px;
+            background: rgba(0,255,0,0.1);
+            border-radius: 10px;
+            border-left: 5px solid #00ff00;
+        }
+
+        .followup {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
             font-size: 1.1em;
+            line-height: 1.6;
+            border-left: 5px solid #FFA500;
         }
 
         .modal-buttons {
             display: flex;
             gap: 15px;
             justify-content: center;
-            margin-top: 25px;
+            margin-top: 30px;
         }
 
         .btn {
-            padding: 12px 35px;
+            padding: 12px 30px;
             font-size: 1.1em;
             border: none;
             border-radius: 8px;
@@ -343,11 +324,132 @@
             transform: scale(1.05);
         }
 
+        /* Gameboard Selector */
+        .board-selector {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .board-selector.active {
+            display: block;
+        }
+
+        .board-selector h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .board-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .board-option {
+            background: #060B5E;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #FFD700;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .board-option:hover {
+            background: #0a1270;
+            transform: scale(1.05);
+        }
+
+        .board-option.selected {
+            background: #FFD700;
+            color: #060B5E;
+        }
+
+        /* Final Jeopardy Styles */
+        .final-jeopardy {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        .final-jeopardy.active {
+            display: flex;
+        }
+
+        .final-category {
+            font-size: 2.5em;
+            color: #FFD700;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .wager-section {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .wager-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .team-wager {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+        }
+
+        .team-wager label {
+            font-size: 1.2em;
+            color: #FFD700;
+            flex: 1;
+        }
+
+        .team-wager input {
+            width: 150px;
+            padding: 10px;
+            font-size: 1.2em;
+            border: 2px solid #FFD700;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-align: center;
+        }
+
+        .final-question-display {
+            font-size: 2em;
+            padding: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            margin: 20px 0;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
         .controls {
             position: fixed;
             bottom: 10px;
             right: 10px;
             z-index: 100;
+            display: flex;
+            gap: 10px;
         }
 
         .reset-btn {
@@ -365,14 +467,48 @@
             background: #218838;
         }
 
+        .settings-btn {
+            background: #6c757d;
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .settings-btn:hover {
+            background: #5a6268;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🏥 MEDICAL JEOPARDY 🏥</h1>
-            <div class="subtitle">Internal Medicine Resident Edition</div>
+            <div class="phase-indicator" id="phase-indicator">SELECT GAMEBOARDS</div>
         </header>
+
+        <div class="game-controls">
+            <button class="control-btn" id="select-boards-btn" onclick="showBoardSelector()">Select Gameboards</button>
+            <button class="control-btn" id="start-jeopardy-btn" onclick="startJeopardy()" disabled>Start Jeopardy</button>
+            <button class="control-btn" id="start-double-btn" onclick="startDoubleJeopardy()" disabled>Start Double Jeopardy</button>
+            <button class="control-btn" id="start-final-btn" onclick="startFinalJeopardy()" disabled>Start Final Jeopardy</button>
+        </div>
+
+        <!-- Board Selector -->
+        <div class="board-selector active" id="board-selector">
+            <h3>Select Jeopardy Round Gameboard:</h3>
+            <div class="board-options" id="jeopardy-boards"></div>
+            
+            <h3 style="margin-top: 20px;">Select Double Jeopardy Round Gameboard:</h3>
+            <div class="board-options" id="double-jeopardy-boards"></div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="control-btn" onclick="confirmBoardSelection()">Confirm Selection</button>
+            </div>
+        </div>
 
         <div class="score-board">
             <div class="team">
@@ -406,419 +542,337 @@
 
         <div class="board" id="board"></div>
 
+        <!-- Final Jeopardy Section -->
+        <div class="final-jeopardy" id="final-jeopardy">
+            <div class="final-category" id="final-category">FINAL JEOPARDY</div>
+            
+            <div class="wager-section" id="wager-section">
+                <h3 style="text-align: center; margin-bottom: 20px; color: #FFD700;">Place Your Wagers</h3>
+                <div class="wager-inputs">
+                    <div class="team-wager">
+                        <label id="wager-team1-label">Team 1:</label>
+                        <input type="number" id="wager1" min="0" value="0">
+                    </div>
+                    <div class="team-wager">
+                        <label id="wager-team2-label">Team 2:</label>
+                        <input type="number" id="wager2" min="0" value="0">
+                    </div>
+                    <div class="team-wager">
+                        <label id="wager-team3-label">Team 3:</label>
+                        <input type="number" id="wager3" min="0" value="0">
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-reveal" onclick="showFinalQuestion()">Show Question</button>
+                </div>
+            </div>
+
+            <div class="final-question-display" id="final-question-display"></div>
+
+            <div class="modal-buttons" id="final-buttons" style="display: none;">
+                <button class="btn btn-reveal" onclick="revealFinalAnswer()">Reveal Answer</button>
+                <button class="btn btn-close" onclick="endGame()">End Game</button>
+            </div>
+        </div>
+
         <div class="controls">
+            <button class="settings-btn" onclick="showBoardSelector()">⚙️ Settings</button>
             <button class="reset-btn" onclick="resetGame()">Reset Game</button>
         </div>
     </div>
 
     <div class="modal" id="modal">
-        <div class="modal-content" id="modal-content">
-            <div class="daily-double-banner" id="dd-banner" style="display: none;">DAILY DOUBLE!</div>
-            <div class="wager-section" id="wager-section" style="display: none;">
-                <p style="font-size: 1.3em; margin-bottom: 15px;">Select team and enter wager:</p>
-                <div style="margin-bottom: 15px;">
-                    <button class="wager-btn" onclick="selectDDTeam(1)">Team 1</button>
-                    <button class="wager-btn" onclick="selectDDTeam(2)">Team 2</button>
-                    <button class="wager-btn" onclick="selectDDTeam(3)">Team 3</button>
-                </div>
-                <input type="number" class="wager-input" id="wager-amount" placeholder="Enter wager" min="5">
-                <div style="margin-top: 10px;">
-                    <button class="wager-btn" onclick="submitWager()">Submit Wager</button>
-                </div>
+        <div class="modal-content">
+            <div class="modal-category" id="modal-category"></div>
+            <div class="modal-value" id="modal-value"></div>
+            <div class="question" id="modal-question"></div>
+            <div class="answer" id="modal-answer">
+                <div class="answer-label">ANSWER:</div>
+                <div class="answer-text" id="answer-text"></div>
             </div>
-            <div id="question-section">
-                <div class="modal-category" id="modal-category"></div>
-                <div class="modal-value" id="modal-value"></div>
-                <div class="question" id="modal-question"></div>
-                <div class="answer" id="modal-answer">
-                    <div class="answer-label">ANSWER:</div>
-                    <div id="answer-text"></div>
-                </div>
-                <div class="follow-up" id="follow-up" style="display: none;">
-                    <div class="follow-up-label">TEACHING POINT:</div>
-                    <div id="follow-up-text"></div>
-                </div>
-                <div class="modal-buttons">
-                    <button class="btn btn-reveal" id="reveal-btn" onclick="revealAnswer()">Reveal Answer</button>
-                    <button class="btn btn-close" onclick="closeModal()">Close</button>
-                </div>
+            <div class="followup" id="modal-followup"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-reveal" id="reveal-btn" onclick="revealAnswer()">Reveal Answer</button>
+                <button class="btn btn-close" onclick="closeModal()">Close</button>
             </div>
         </div>
     </div>
 
+    <script src="gameboards-data.js"></script>
     <script>
-        const categories = [
-            'Cardiology',
-            'Infectious Disease',
-            'Nephrology',
-            'Hematology',
-            'Pulmonology',
-            'Gastroenterology'
-        ];
+        // Game State
+        let currentPhase = 'setup'; // setup, jeopardy, double-jeopardy, final-jeopardy
+        let selectedJeopardyBoard = null;
+        let selectedDoubleBoard = null;
+        let currentQuestions = {};
+        let answeredQuestions = new Set();
+        let currentQuestionValue = 0;
+        let teamScores = {1: 0, 2: 0, 3: 0};
+        
+        // Initialize game
+        function initGame() {
+            populateBoardSelectors();
+            updatePhaseDisplay();
+        }
 
-        const questions = {
-            'Cardiology': {
-                200: {
-                    q: 'This cardiac biomarker is most specific for myocardial injury and is the first-line test in suspected ACS.',
-                    a: 'What is troponin (Troponin I or Troponin T)?',
-                    followup: 'Troponin begins rising 3-4 hours after myocardial injury, peaks at 24-48 hours, and can remain elevated for 7-14 days. Serial troponins should be drawn at presentation and 3-6 hours later for optimal sensitivity.'
-                },
-                400: {
-                    q: 'Name one of the three beta-blockers proven to reduce mortality in heart failure with reduced ejection fraction.',
-                    a: 'What is metoprolol succinate, carvedilol, or bisoprolol?',
-                    followup: 'These beta-blockers must be started at LOW doses and up-titrated slowly. Target doses: metoprolol succinate 200mg daily, carvedilol 25-50mg BID, bisoprolol 10mg daily. Never start during acute decompensation.'
-                },
-                600: {
-                    q: 'In a patient with LBBB and suspected MI, what ECG criteria can help diagnose acute STEMI?',
-                    a: 'What is Sgarbossa criteria?',
-                    followup: 'Sgarbossa criteria: 1) Concordant ST elevation ≥1mm (5 points), 2) Concordant ST depression ≥1mm in V1-V3 (3 points), 3) Discordant ST elevation ≥5mm (2 points). Score ≥3 is specific for acute MI. Modified criteria uses proportional discordance (≥25% of QRS amplitude).'
-                },
-                800: {
-                    q: 'A postmenopausal woman presents with chest pain and apical ballooning on echo but clean coronaries. What is the most likely diagnosis?',
-                    a: 'What is Takotsubo cardiomyopathy (stress-induced cardiomyopathy)?',
-                    followup: 'Takotsubo mimics acute MI with troponin elevation and ECG changes but shows transient apical ballooning without coronary occlusion. Typically follows emotional or physical stress. Treatment is supportive with beta-blockers and ACE inhibitors. Most patients recover normal LV function within weeks to months.'
-                },
-                1000: {
-                    q: 'At what LVEF should you refer a patient with non-ischemic cardiomyopathy for ICD evaluation after optimizing medical therapy?',
-                    a: 'What is ≤35% (after at least 3 months of GDMT)?',
-                    followup: 'The patient must also have NYHA class II-III symptoms and expectation of survival >1 year. For ischemic cardiomyopathy, ICD is indicated if EF ≤35% at least 40 days post-MI. CRT-D should be considered if QRS ≥150ms with LBBB morphology.'
+        function populateBoardSelectors() {
+            const jeopardyContainer = document.getElementById('jeopardy-boards');
+            const doubleContainer = document.getElementById('double-jeopardy-boards');
+            
+            // Populate Jeopardy boards
+            Object.keys(GAMEBOARDS).forEach(boardName => {
+                if (boardName.includes('Regular') || boardName.includes('PGY')) {
+                    const option = createBoardOption(boardName, 'jeopardy');
+                    jeopardyContainer.appendChild(option);
                 }
-            },
-            'Infectious Disease': {
-                200: {
-                    q: 'What is the most common bacterial cause of community-acquired pneumonia?',
-                    a: 'What is Streptococcus pneumoniae?',
-                    followup: 'S. pneumoniae accounts for ~30-50% of CAP requiring hospitalization. Typical presentation includes abrupt onset of fever, productive cough, and lobar consolidation on imaging. Risk factors include age >65, asplenia, immunocompromise, and chronic lung disease.'
-                },
-                400: {
-                    q: 'A patient with pyelonephritis grows E. coli sensitive to all antibiotics. According to IDSA, what is the recommended treatment duration?',
-                    a: 'What is 7 days (or 5-7 days for uncomplicated cases)?',
-                    followup: 'IDSA 2022 guidelines recommend 5-7 days for uncomplicated gram-negative bacteremia from urinary source. For complicated infections (abscess, obstruction), treat 10-14 days. Always follow-up blood cultures to document clearance.'
-                },
-                600: {
-                    q: 'What antibiotic combination provides synergy against Enterococcus faecalis endocarditis?',
-                    a: 'What is ampicillin (or penicillin G) plus gentamicin?',
-                    followup: 'Treat for 4-6 weeks. Gentamicin is given for the first 2 weeks only for synergy. For VRE, use daptomycin (with or without ampicillin/ceftaroline). Vancomycin is NOT synergistic with aminoglycosides against enterococci.'
-                },
-                800: {
-                    q: 'A patient has two blood cultures growing Staph epidermidis 48 hours apart and a new murmur. Name two major Duke criteria that support endocarditis.',
-                    a: 'What are: positive blood cultures with typical organisms AND evidence of endocardial involvement (vegetation on echo or new valvular regurgitation)?',
-                    followup: 'Modified Duke Criteria requires 2 major, 1 major + 3 minor, or 5 minor criteria for definite endocarditis. Major criteria: 1) typical organisms in 2 separate cultures, 2) endocardial involvement, 3) positive Coxiella serology. Always get TEE if TTE is negative but suspicion remains high.'
-                },
-                1000: {
-                    q: 'A patient develops hospital-acquired pneumonia 6 days after intubation with risk factors for MRSA and Pseudomonas. Name the empiric antibiotic regimen.',
-                    a: 'What is vancomycin (or linezolid) PLUS an anti-pseudomonal beta-lactam (piperacillin-tazobactam, cefepime, ceftazidime, or meropenem)?',
-                    followup: 'Risk factors for MRSA: prior IV antibiotics within 90 days, prior MRSA, hospitalization in unit with >20% MRSA. Risk factors for Pseudomonas: structural lung disease, recent broad-spectrum antibiotics. De-escalate based on cultures and clinical response by day 3.'
-                }
-            },
-            'Nephrology': {
-                200: {
-                    q: 'What is the most common cause of acute kidney injury in hospitalized patients?',
-                    a: 'What is acute tubular necrosis (ATN)?',
-                    followup: 'ATN results from ischemic or nephrotoxic injury. Look for: FENa >2%, muddy brown casts, and renal tubular epithelial cells on urinalysis. Management is supportive - avoid nephrotoxins, maintain euvolemia, and adjust medication doses.'
-                },
-                400: {
-                    q: 'A patient has a GFR of 50 mL/min/1.73m². What stage of chronic kidney disease is this?',
-                    a: 'What is Stage 3a CKD (GFR 45-59)?',
-                    followup: 'CKD staging: Stage 1 (GFR ≥90), Stage 2 (60-89), Stage 3a (45-59), Stage 3b (30-44), Stage 4 (15-29), Stage 5 (<15 or dialysis). Also classify by albuminuria: A1 (<30 mg/g), A2 (30-300), A3 (>300). Refer to nephrology when GFR <30 or rapid decline.'
-                },
-                600: {
-                    q: 'A patient with AKI has muddy brown casts, FENa of 3%, and many renal tubular epithelial cells. What is the diagnosis?',
-                    a: 'What is acute tubular necrosis (ATN)?',
-                    followup: 'ATN vs prerenal: ATN has FENa >2% (or FEUrea >35%), urine osmolality <350, and muddy brown/granular casts. Prerenal has FENa <1% (or FEUrea <35%), urine osmolality >500, and hyaline casts. Diuretics invalidate FENa - use FEUrea instead.'
-                },
-                800: {
-                    q: 'List the five indications for urgent dialysis using the mnemonic AEIOU.',
-                    a: 'What are: Acidosis (severe metabolic), Electrolytes (hyperkalemia), Ingestion (toxic alcohols/lithium), Overload (volume), Uremia (pericarditis/encephalopathy)?',
-                    followup: 'Specific thresholds: K >6.5 with ECG changes, pH <7.1, symptomatic uremia (pericarditis, altered mental status, seizures), refractory volume overload. Also consider for severe hypothermia and some drug overdoses (lithium, metformin, salicylates).'
-                },
-                1000: {
-                    q: 'A 25-year-old man has hemoptysis, hematuria, and rapidly progressive glomerulonephritis. What antibody test confirms anti-GBM disease?',
-                    a: 'What is anti-GBM antibody (anti-alpha-3 chain of type IV collagen)?',
-                    followup: 'Goodpasture syndrome = anti-GBM disease + pulmonary hemorrhage. Isolated renal disease is more common. Kidney biopsy shows linear IgG staining along GBM. Treatment: plasmapheresis + cyclophosphamide + corticosteroids. Prognosis for renal recovery is poor if Cr >5.7 or dialysis-dependent at presentation.'
-                }
-            },
-            'Hematology': {
-                200: {
-                    q: 'A patient has an elevated INR but normal PTT. What factor deficiency or vitamin deficiency causes this pattern?',
-                    a: 'What is Factor VII deficiency or Vitamin K deficiency?',
-                    followup: 'Factor VII has the shortest half-life (4-6 hours), so it decreases first with warfarin or vitamin K deficiency. INR measures extrinsic pathway (Factors VII, X, V, II, fibrinogen). PTT measures intrinsic pathway (Factors XII, XI, IX, VIII). Both pathways share the common pathway (X, V, II, fibrinogen).'
-                },
-                400: {
-                    q: 'A patient has unilateral leg swelling and a Wells score of 3. What should you do next?',
-                    a: 'What is obtain ultrasound or check D-dimer?',
-                    followup: 'Wells score ≥2 = DVT likely. Options: 1) Ultrasound directly, or 2) D-dimer first - if negative, DVT excluded; if positive, get ultrasound. For Wells <2, check D-dimer - if negative, stop; if positive, get ultrasound. Remember: D-dimer has low specificity (many false positives) but high negative predictive value.'
-                },
-                600: {
-                    q: 'What bone marrow finding, along with >10% clonal plasma cells, confirms multiple myeloma?',
-                    a: 'What is evidence of end-organ damage: hypercalcemia, renal insufficiency, anemia, or bone lesions (CRAB criteria)?',
-                    followup: 'CRAB criteria: Calcium >11 mg/dL, Renal dysfunction (Cr >2), Anemia (Hgb <10 or 2g below normal), Bone disease (lytic lesions). Also diagnose if ≥60% plasma cells, serum FLC ratio ≥100, or >1 focal lesion on MRI. Smoldering myeloma: 10-60% plasma cells but NO CRAB criteria.'
-                },
-                800: {
-                    q: 'A patient has a hemoglobin of 19 g/dL and a JAK2 mutation. Name two other major criteria for polycythemia vera.',
-                    a: 'What are: bone marrow hypercellularity AND subnormal serum erythropoietin level?',
-                    followup: '2016 WHO criteria for PV: Major - 1) Hgb >16.5 (men) or >16 (women), 2) Bone marrow trilineage proliferation, 3) JAK2 V617F or exon 12 mutation. Minor - subnormal EPO. Need all 3 major OR 2 major + minor. Treat with phlebotomy to Hct <45%, aspirin, and hydroxyurea if high risk.'
-                },
-                1000: {
-                    q: 'A patient on warfarin has a HAS-BLED score of 4. What does this mean?',
-                    a: 'What is high bleeding risk (score ≥3), requiring closer monitoring?',
-                    followup: 'HAS-BLED: Hypertension (uncontrolled), Abnormal renal/liver function, Stroke, Bleeding history, Labile INR, Elderly (>65), Drugs/alcohol. Score ≥3 = high risk. IMPORTANT: High HAS-BLED should NOT prevent anticoagulation if indicated - instead, address modifiable risk factors and monitor closely.'
-                }
-            },
-            'Pulmonology': {
-                200: {
-                    q: 'What is the most common cause of COPD exacerbation?',
-                    a: 'What is viral respiratory infection (or bacterial infection)?',
-                    followup: 'Viral infections (rhinovirus, influenza, RSV) cause ~30-50% of exacerbations. Bacterial infections (H. influenzae, S. pneumoniae, M. catarrhalis) cause ~25%. Environmental pollutants and unknown causes account for the rest. Antibiotics indicated if increased sputum purulence.'
-                },
-                400: {
-                    q: 'A COPD patient has had 3 exacerbations this year requiring hospitalization. According to GOLD, what medication should you add to their LABA/LAMA?',
-                    a: 'What is inhaled corticosteroids (ICS)?',
-                    followup: 'GOLD recommends ICS for patients with ≥2 exacerbations/year or ≥1 hospitalization. Triple therapy (LABA/LAMA/ICS) reduces exacerbations but increases pneumonia risk. Consider blood eosinophils: if >300 cells/μL, more likely to benefit from ICS. If <100, less likely to benefit.'
-                },
-                600: {
-                    q: 'A patient has a pleural effusion. Name the three Light criteria that distinguish exudate from transudate.',
-                    a: 'What is: pleural protein/serum protein >0.5, pleural LDH/serum LDH >0.6, OR pleural LDH >2/3 upper limit of normal?',
-                    followup: 'Meeting ANY ONE of the three criteria = exudate. If all three negative = transudate. Common transudates: heart failure, cirrhosis, nephrotic syndrome. Common exudates: pneumonia, malignancy, PE, TB. If transudate by Light but clinically exudative, check serum-pleural albumin gradient (>1.2 = transudate).'
-                },
-                800: {
-                    q: 'A patient presents with pneumonia. Calculate their CURB-65 score and name all five criteria.',
-                    a: 'What are: Confusion, Urea >20 mg/dL (BUN >19), Respiratory rate ≥30, Blood pressure (SBP <90 or DBP ≤60), Age ≥65?',
-                    followup: 'CURB-65 predicts mortality: 0-1 = low risk (outpatient), 2 = intermediate (consider admission), 3-5 = high risk (admit, consider ICU). Alternative: PSI (Pneumonia Severity Index) - more complex but better validated. Always use clinical judgment - patient with hypoxia may need admission despite low CURB-65.'
-                },
-                1000: {
-                    q: 'Define the severity categories of obstructive sleep apnea based on the Apnea-Hypopnea Index.',
-                    a: 'What is: Mild 5-15, Moderate 15-30, Severe >30 events per hour?',
-                    followup: 'AHI = apneas + hypopneas per hour of sleep. Apnea = cessation of airflow ≥10 sec. Hypopnea = ≥30% reduction in airflow with ≥3% oxygen desaturation or arousal. Treat with CPAP if AHI >15 or AHI >5 with symptoms. Alternative treatments: oral appliances, weight loss, positional therapy, or surgery for select patients.'
-                }
-            },
-            'Gastroenterology': {
-                200: {
-                    q: 'What is the first-line medication class for gastroesophageal reflux disease?',
-                    a: 'What is a proton pump inhibitor (PPI)?',
-                    followup: 'PPIs are most effective when taken 30-60 minutes before first meal of the day. Standard 8-week course for healing erosive esophagitis. For refractory GERD, consider twice-daily dosing, switching PPIs, checking compliance, or pH monitoring. Long-term PPI use associated with C. diff, pneumonia, osteoporosis, and hypomagnesemia.'
-                },
-                400: {
-                    q: 'A patient tests positive for H. pylori. In areas with low clarithromycin resistance, what is the first-line eradication regimen?',
-                    a: 'What is clarithromycin triple therapy (PPI + clarithromycin + amoxicillin for 14 days)?',
-                    followup: 'Use metronidazole if penicillin-allergic. Alternative first-line: bismuth quadruple therapy (PPI + bismuth + tetracycline + metronidazole x 14 days). In high clarithromycin resistance areas (>15%), use quadruple therapy first-line. Confirm eradication with urea breath test or stool antigen ≥4 weeks after completing antibiotics.'
-                },
-                600: {
-                    q: 'Name the scoring system that uses five variables measured at admission and 48 hours to predict severity and mortality in acute pancreatitis.',
-                    a: 'What is Ranson criteria?',
-                    followup: 'Ranson criteria: At admission - age >55, WBC >16K, glucose >200, AST >250, LDH >350. At 48 hours - Hct drop >10%, BUN rise >5, Ca <8, PaO2 <60, base deficit >4, fluid sequestration >6L. Score 0-2 = 2% mortality, 3-4 = 15%, 5-6 = 40%, >6 = 100%. Alternative: use Revised Atlanta Classification or APACHE II.'
-                },
-                800: {
-                    q: 'A cirrhotic patient with ascites has a MELD score of 18. Should they be referred for transplant evaluation?',
-                    a: 'What is yes (refer when MELD ≥15 or with complications of portal hypertension)?',
-                    followup: 'MELD = 3.78×ln(bilirubin) + 11.2×ln(INR) + 9.57×ln(creatinine) + 6.43. Score ranges 6-40. Refer for transplant if MELD ≥15 or with complications: refractory ascites, hepatic encephalopathy, variceal bleeding, hepatocellular carcinoma, hepatopulmonary syndrome, or portopulmonary hypertension.'
-                },
-                1000: {
-                    q: 'A cirrhotic patient is confused and disoriented to time and place. What grade of hepatic encephalopathy is this?',
-                    a: 'What is Grade 2 hepatic encephalopathy?',
-                    followup: 'West Haven Criteria: Grade 0 = minimal/subclinical, Grade 1 = trivial lack of awareness/euphoria/shortened attention, Grade 2 = lethargy/disorientation to time, Grade 3 = somnolent but arousable/disoriented to place/bizarre behavior, Grade 4 = coma. Treat with lactulose (target 2-3 soft stools/day) + rifaximin. Avoid precipitants: GI bleed, infection, constipation, dehydration, sedatives.'
-                }
-            }
-        };
-
-        let selectedClues = new Set();
-        let scores = {1: 0, 2: 0, 3: 0};
-        let currentValue = 0;
-        let dailyDoubles = new Set();
-        let isDailyDouble = false;
-        let ddTeam = null;
-        let ddWager = 0;
-
-        function initBoard() {
-            const board = document.getElementById('board');
-            board.innerHTML = '';
-
-            // Select 2 random daily doubles (not in the $200 row)
-            dailyDoubles.clear();
-            const availableClues = [];
-            const values = [400, 600, 800, 1000]; // Exclude $200
-            values.forEach(value => {
-                categories.forEach(category => {
-                    availableClues.push(`${category}-${value}`);
-                });
             });
             
-            // Randomly select 2 daily doubles
-            const shuffled = availableClues.sort(() => 0.5 - Math.random());
-            dailyDoubles.add(shuffled[0]);
-            dailyDoubles.add(shuffled[1]);
-
-            // Add category headers
-            categories.forEach(category => {
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = 'category';
-                categoryDiv.textContent = category;
-                board.appendChild(categoryDiv);
+            // Populate Double Jeopardy boards
+            Object.keys(GAMEBOARDS).forEach(boardName => {
+                if (boardName.includes('Double')) {
+                    const option = createBoardOption(boardName, 'double');
+                    doubleContainer.appendChild(option);
+                }
             });
+        }
 
-            // Add clues
-            const allValues = [200, 400, 600, 800, 1000];
-            allValues.forEach(value => {
+        function createBoardOption(boardName, type) {
+            const div = document.createElement('div');
+            div.className = 'board-option';
+            div.textContent = boardName;
+            div.onclick = () => selectBoard(boardName, type, div);
+            return div;
+        }
+
+        function selectBoard(boardName, type, element) {
+            // Clear previous selections for this type
+            const container = type === 'jeopardy' ? 
+                document.getElementById('jeopardy-boards') : 
+                document.getElementById('double-jeopardy-boards');
+            
+            container.querySelectorAll('.board-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            
+            if (type === 'jeopardy') {
+                selectedJeopardyBoard = boardName;
+            } else {
+                selectedDoubleBoard = boardName;
+            }
+            
+            // Enable start button if both boards selected
+            if (selectedJeopardyBoard && selectedDoubleBoard) {
+                document.getElementById('start-jeopardy-btn').disabled = false;
+            }
+        }
+
+        function confirmBoardSelection() {
+            if (!selectedJeopardyBoard || !selectedDoubleBoard) {
+                alert('Please select both a Jeopardy and Double Jeopardy board');
+                return;
+            }
+            hideBoardSelector();
+        }
+
+        function showBoardSelector() {
+            document.getElementById('board-selector').classList.add('active');
+            document.getElementById('board').style.display = 'none';
+            document.getElementById('final-jeopardy').classList.remove('active');
+        }
+
+        function hideBoardSelector() {
+            document.getElementById('board-selector').classList.remove('active');
+        }
+
+        function startJeopardy() {
+            currentPhase = 'jeopardy';
+            loadBoard(selectedJeopardyBoard, [200, 400, 600, 800, 1000]);
+            document.getElementById('start-double-btn').disabled = false;
+            document.getElementById('start-final-btn').disabled = false;
+            updatePhaseDisplay();
+            hideBoardSelector();
+            document.getElementById('board').style.display = 'grid';
+        }
+
+        function startDoubleJeopardy() {
+            currentPhase = 'double-jeopardy';
+            loadBoard(selectedDoubleBoard, [400, 800, 1200, 1600, 2000]);
+            updatePhaseDisplay();
+            document.getElementById('board').style.display = 'grid';
+            document.getElementById('final-jeopardy').classList.remove('active');
+        }
+
+        function startFinalJeopardy() {
+            currentPhase = 'final-jeopardy';
+            updatePhaseDisplay();
+            document.getElementById('board').style.display = 'none';
+            document.getElementById('final-jeopardy').classList.add('active');
+            
+            // Update wager labels with team names
+            for (let i = 1; i <= 3; i++) {
+                const teamName = document.getElementById(`team${i}-name`).value;
+                const score = teamScores[i];
+                document.getElementById(`wager-team${i}-label`).textContent = 
+                    `${teamName} ($${score}):`;
+                document.getElementById(`wager${i}`).max = Math.max(score, 1000);
+            }
+        }
+
+        function loadBoard(boardName, pointValues) {
+            answeredQuestions.clear();
+            currentQuestions = GAMEBOARDS[boardName];
+            const categories = Object.keys(currentQuestions);
+            const boardElement = document.getElementById('board');
+            boardElement.innerHTML = '';
+            
+            // Create headers
+            categories.forEach(category => {
+                const categoryCell = document.createElement('div');
+                categoryCell.className = 'category';
+                categoryCell.textContent = category;
+                boardElement.appendChild(categoryCell);
+            });
+            
+            // Create question cells
+            pointValues.forEach(value => {
                 categories.forEach(category => {
-                    const clueDiv = document.createElement('div');
-                    clueDiv.className = 'clue';
-                    clueDiv.textContent = `$${value}`;
-                    clueDiv.onclick = () => showClue(category, value);
-                    clueDiv.dataset.category = category;
-                    clueDiv.dataset.value = value;
-                    board.appendChild(clueDiv);
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = `$${value}`;
+                    cell.dataset.category = category;
+                    cell.dataset.value = value;
+                    cell.onclick = () => showQuestion(category, value, cell);
+                    boardElement.appendChild(cell);
                 });
             });
         }
 
-        function showClue(category, value) {
-            const clueElement = document.querySelector(`[data-category="${category}"][data-value="${value}"]`);
-            if (clueElement.classList.contains('selected')) return;
-
-            currentValue = value;
-            isDailyDouble = dailyDoubles.has(`${category}-${value}`);
-            const question = questions[category][value];
-
-            const modalContent = document.getElementById('modal-content');
-            const ddBanner = document.getElementById('dd-banner');
-            const wagerSection = document.getElementById('wager-section');
-            const questionSection = document.getElementById('question-section');
-
-            if (isDailyDouble) {
-                // Show daily double screen
-                modalContent.classList.add('daily-double');
-                ddBanner.style.display = 'block';
-                wagerSection.style.display = 'block';
-                questionSection.style.display = 'none';
-                ddTeam = null;
-                ddWager = 0;
-                document.getElementById('wager-amount').value = '';
-            } else {
-                // Show normal question
-                modalContent.classList.remove('daily-double');
-                ddBanner.style.display = 'none';
-                wagerSection.style.display = 'none';
-                questionSection.style.display = 'block';
-            }
-
+        function showQuestion(category, value, cell) {
+            if (cell.classList.contains('answered')) return;
+            
+            const question = currentQuestions[category][value];
+            currentQuestionValue = value;
+            
             document.getElementById('modal-category').textContent = category;
-            document.getElementById('modal-value').textContent = isDailyDouble ? 'DAILY DOUBLE' : `$${value}`;
+            document.getElementById('modal-value').textContent = `$${value}`;
             document.getElementById('modal-question').textContent = question.q;
             document.getElementById('answer-text').textContent = question.a;
-            
-            // Handle follow-up
-            const followUpDiv = document.getElementById('follow-up');
-            const followUpText = document.getElementById('follow-up-text');
-            if (question.followup) {
-                followUpText.textContent = question.followup;
-                followUpDiv.style.display = 'none'; // Hide until answer is revealed
-            } else {
-                followUpDiv.style.display = 'none';
-            }
-            
+            document.getElementById('modal-followup').textContent = question.followup || '';
             document.getElementById('modal-answer').classList.remove('show');
             document.getElementById('reveal-btn').style.display = 'inline-block';
-
+            
             document.getElementById('modal').classList.add('active');
-
-            clueElement.classList.add('selected');
-            selectedClues.add(`${category}-${value}`);
-        }
-
-        function selectDDTeam(team) {
-            ddTeam = team;
-            // Highlight selected team
-            document.querySelectorAll('.wager-btn').forEach(btn => {
-                btn.style.background = 'rgba(255,255,255,0.2)';
-            });
-            event.target.style.background = '#FFD700';
-        }
-
-        function submitWager() {
-            if (!ddTeam) {
-                alert('Please select a team first!');
-                return;
-            }
             
-            const wagerInput = document.getElementById('wager-amount');
-            const wager = parseInt(wagerInput.value);
-            
-            if (!wager || wager < 5) {
-                alert('Please enter a valid wager (minimum $5)');
-                return;
-            }
-            
-            const maxWager = Math.max(currentValue, scores[ddTeam]);
-            if (wager > maxWager) {
-                alert(`Maximum wager is $${maxWager} (your score or the clue value, whichever is higher)`);
-                return;
-            }
-            
-            ddWager = wager;
-            
-            // Show the question
-            document.getElementById('wager-section').style.display = 'none';
-            document.getElementById('question-section').style.display = 'block';
+            cell.classList.add('answered');
+            answeredQuestions.add(`${category}-${value}`);
         }
 
         function revealAnswer() {
             document.getElementById('modal-answer').classList.add('show');
             document.getElementById('reveal-btn').style.display = 'none';
-            
-            // Show follow-up if it exists
-            const followUpDiv = document.getElementById('follow-up');
-            if (followUpDiv.querySelector('#follow-up-text').textContent) {
-                followUpDiv.style.display = 'block';
-            }
         }
 
         function closeModal() {
             document.getElementById('modal').classList.remove('active');
-            isDailyDouble = false;
-            ddTeam = null;
-            ddWager = 0;
         }
 
         function adjustScore(team, amount) {
-            if (isDailyDouble && ddTeam) {
-                // Daily double scoring
-                if (team === ddTeam) {
-                    if (amount === 'current') {
-                        scores[team] += ddWager;
-                    } else if (amount === -200) {
-                        scores[team] -= ddWager;
-                    }
-                }
-            } else {
-                // Normal scoring
-                if (amount === 'current') {
-                    amount = currentValue;
-                }
-                scores[team] += amount;
+            if (amount === 'current') {
+                amount = currentQuestionValue;
             }
-            document.getElementById(`team${team}-score`).textContent = `$${scores[team]}`;
+            teamScores[team] += amount;
+            updateScoreDisplay();
+        }
+
+        function updateScoreDisplay() {
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`team${i}-score`).textContent = 
+                    `$${teamScores[i]}`;
+            }
+        }
+
+        function updatePhaseDisplay() {
+            const indicator = document.getElementById('phase-indicator');
+            const phases = {
+                'setup': 'SELECT GAMEBOARDS',
+                'jeopardy': 'JEOPARDY ROUND',
+                'double-jeopardy': 'DOUBLE JEOPARDY',
+                'final-jeopardy': 'FINAL JEOPARDY'
+            };
+            indicator.textContent = phases[currentPhase];
+        }
+
+        // Final Jeopardy Functions
+        function showFinalQuestion() {
+            const category = "INTERNAL MEDICINE";
+            const question = "This cardiac biomarker elevation, when combined with ECG changes and clinical presentation, forms the basis for diagnosing acute myocardial infarction according to the Fourth Universal Definition.";
+            
+            document.getElementById('final-question-display').textContent = question;
+            document.getElementById('wager-section').style.display = 'none';
+            document.getElementById('final-buttons').style.display = 'flex';
+        }
+
+        function revealFinalAnswer() {
+            const answer = "What is troponin (cardiac troponin I or T)?";
+            const display = document.getElementById('final-question-display');
+            display.innerHTML = `
+                <div>
+                    <div style="font-size: 1.5em; margin-bottom: 30px;">${display.textContent}</div>
+                    <div style="color: #00ff00; font-size: 2em; border-top: 3px solid #00ff00; padding-top: 20px;">
+                        ${answer}
+                    </div>
+                </div>
+            `;
+            
+            // Apply wagers
+            for (let i = 1; i <= 3; i++) {
+                const wager = parseInt(document.getElementById(`wager${i}`).value) || 0;
+                const correct = confirm(`Did ${document.getElementById(`team${i}-name`).value} answer correctly?`);
+                if (correct) {
+                    teamScores[i] += wager;
+                } else {
+                    teamScores[i] -= wager;
+                }
+            }
+            updateScoreDisplay();
+        }
+
+        function endGame() {
+            const scores = [
+                {team: document.getElementById('team1-name').value, score: teamScores[1]},
+                {team: document.getElementById('team2-name').value, score: teamScores[2]},
+                {team: document.getElementById('team3-name').value, score: teamScores[3]}
+            ];
+            scores.sort((a, b) => b.score - a.score);
+            
+            alert(`FINAL SCORES:\n\n1st: ${scores[0].team} - $${scores[0].score}\n2nd: ${scores[1].team} - $${scores[1].score}\n3rd: ${scores[2].team} - $${scores[2].score}`);
         }
 
         function resetGame() {
-            if (confirm('Are you sure you want to reset the game? All progress will be lost.')) {
-                selectedClues.clear();
-                scores = {1: 0, 2: 0, 3: 0};
-                document.getElementById('team1-score').textContent = '$0';
-                document.getElementById('team2-score').textContent = '$0';
-                document.getElementById('team3-score').textContent = '$0';
-                initBoard();
+            if (confirm('Reset the entire game? This will clear all scores and progress.')) {
+                currentPhase = 'setup';
+                selectedJeopardyBoard = null;
+                selectedDoubleBoard = null;
+                teamScores = {1: 0, 2: 0, 3: 0};
+                answeredQuestions.clear();
+                updateScoreDisplay();
+                updatePhaseDisplay();
+                document.getElementById('start-jeopardy-btn').disabled = true;
+                document.getElementById('start-double-btn').disabled = true;
+                document.getElementById('start-final-btn').disabled = true;
+                showBoardSelector();
+                
+                // Reset board selections
+                document.querySelectorAll('.board-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
             }
         }
 
-        // Close modal when clicking outside
-        document.getElementById('modal').onclick = function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        };
-
-        // Initialize the board on load
-        initBoard();
+        // Initialize on load
+        initGame();
     </script>
 </body>
 </html>
